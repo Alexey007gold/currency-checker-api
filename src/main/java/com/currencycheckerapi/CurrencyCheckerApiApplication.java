@@ -1,0 +1,13 @@
+package com.currencycheckerapi;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class CurrencyCheckerApiApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(CurrencyCheckerApiApplication.class, args);
+	}
+
+}
