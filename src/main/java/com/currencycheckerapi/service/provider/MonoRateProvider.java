@@ -5,6 +5,7 @@ import com.currencycheckerapi.service.CurrencyCodeService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -29,19 +30,25 @@ public class MonoRateProvider implements RateProvider {
             .uri(URI.create("https://api.monobank.ua/bank/currency"))
             .build();
 
+    private List<MonoDTO> rateList;
+
     @Override
     public String getRate(String currencyA, String currencyB) {
         try {
-            HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            List<MonoDTO> rateList = mapper.readValue(httpResponse.body(), new TypeReference<List<MonoDTO>>() {});
             MonoDTO monoDTO = rateList.stream()
                     .filter(e -> currencyCodeService.getCodeForName(currencyA) == e.getCurrencyCodeA() &&
                             currencyCodeService.getCodeForName(currencyB) == e.getCurrencyCodeB())
                     .findFirst().orElseThrow();
             return mapper.writeValueAsString(monoDTO);
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Scheduled(fixedRate = 60000)
+    public void fetchRate() throws IOException, InterruptedException {
+        HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        rateList = mapper.readValue(httpResponse.body(), new TypeReference<List<MonoDTO>>() {});
     }
 
     @Override
