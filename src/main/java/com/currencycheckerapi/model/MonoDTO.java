@@ -7,6 +7,7 @@ public class MonoDTO {
     private Long date;
     private Float rateBuy;
     private Float rateSell;
+    private Float rateCross;
 
     public MonoDTO() {
     }
@@ -49,5 +50,13 @@ public class MonoDTO {
 
     public void setRateSell(Float rateSell) {
         this.rateSell = rateSell;
+    }
+
+    public Float getRateCross() {
+        return rateCross;
+    }
+
+    public void setRateCross(Float rateCross) {
+        this.rateCross = rateCross;
     }
 }
