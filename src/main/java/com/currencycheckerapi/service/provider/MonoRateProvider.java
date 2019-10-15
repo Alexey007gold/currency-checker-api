@@ -4,6 +4,7 @@ import com.currencycheckerapi.model.MonoDTO;
 import com.currencycheckerapi.service.CurrencyCodeService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.net.http.HttpResponse;
 import java.util.List;
 
 @Service
+@Slf4j
 public class MonoRateProvider implements RateProvider {
 
     @Autowired
@@ -49,6 +51,7 @@ public class MonoRateProvider implements RateProvider {
     public void fetchRate() throws IOException, InterruptedException {
         HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         rateList = mapper.readValue(httpResponse.body(), new TypeReference<List<MonoDTO>>() {});
+        log.info("Fetched mono data");
     }
 
     @Override
