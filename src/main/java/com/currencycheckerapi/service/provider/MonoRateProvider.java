@@ -26,7 +26,8 @@ public class MonoRateProvider implements RateProvider {
     @Autowired
     private ObjectMapper mapper;
 
-    private final HttpClient httpClient = HttpClient.newHttpClient();
+    @Autowired
+    private HttpClient httpClient;
 
     private final HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create("https://api.monobank.ua/bank/currency"))
