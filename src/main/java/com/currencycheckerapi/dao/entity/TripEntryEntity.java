@@ -2,17 +2,18 @@ package com.currencycheckerapi.dao.entity;
 
 import com.currencycheckerapi.dao.api.AbstractEntity;
 import com.currencycheckerapi.dao.converter.TypeListConverter;
+import com.currencycheckerapi.dao.converter.ZonedDateTimeConverter;
 import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Entity
-@Getter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "trip_entry")
@@ -26,8 +27,9 @@ public class TripEntryEntity extends AbstractEntity {
     private String dateFrom;
     @Column(name = "date_to", nullable = false)
     private String dateTo;
+    @Convert(converter = ZonedDateTimeConverter.class)
     @Column(name = "date_found", nullable = false)
-    private LocalDateTime dateFound;
+    private ZonedDateTime dateFound;
     @Column(name = "price_big", nullable = false)
     private String priceBig;
     @Column(name = "price_small", nullable = false)

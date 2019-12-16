@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import liquibase.integration.spring.SpringLiquibase;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -19,8 +20,15 @@ import java.net.http.HttpClient;
 @EnableTransactionManagement
 public class CurrencyCheckerApiApplication {
 
-	@Autowired
+	private static String zoneId;
+
 	private DataSource dataSource;
+
+	@Autowired
+	public CurrencyCheckerApiApplication(DataSource dataSource, @Value("${zoneid:+0}") String zoneId) {
+		CurrencyCheckerApiApplication.zoneId = zoneId;
+		this.dataSource = dataSource;
+	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(CurrencyCheckerApiApplication.class, args);
@@ -51,4 +59,7 @@ public class CurrencyCheckerApiApplication {
 		return liquibase;
 	}
 
+	public static String getZoneId() {
+		return zoneId;
+	}
 }

@@ -1,18 +1,24 @@
 package com.currencycheckerapi.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 
-@Getter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class TripEntryDTO {
 
     private String title;
     private String dateFrom;
     private String dateTo;
+    private ZonedDateTime dateFound;
     private String priceBig;
     private String priceSmall;
     private List<String> typeList;

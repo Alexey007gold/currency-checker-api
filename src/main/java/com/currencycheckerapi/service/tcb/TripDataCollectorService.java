@@ -3,7 +3,6 @@ package com.currencycheckerapi.service.tcb;
 import com.currencycheckerapi.dao.entity.TripEntryEntity;
 import com.currencycheckerapi.dao.service.TripEntryService;
 import com.currencycheckerapi.model.TripEntryDTO;
-import com.currencycheckerapi.util.uncheck.ExceptionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -23,12 +22,14 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
+import static com.currencycheckerapi.CurrencyCheckerApiApplication.getZoneId;
 import static com.currencycheckerapi.util.DateUtil.parseDate;
 import static java.util.stream.Collectors.toList;
 
@@ -54,7 +55,9 @@ public class TripDataCollectorService {
 
     @PostConstruct
     public void init() {
-        comparator = Comparator.comparing(ExceptionUtil.uncheckF((TripEntryDTO o) -> parseDate(o.getDateFrom())))
+        log.info(LocalDateTime.now().toString());
+        log.info(ZonedDateTime.now(ZoneId.of(getZoneId())).toString());
+        comparator = Comparator.comparing((TripEntryDTO o) -> parseDate(o.getDateFrom()))
                 .thenComparing(TripEntryDTO::getTitle);
         tripList = StreamSupport.stream(tripEntryService.findAll().spliterator(), false)
                 .map(e -> modelMapper.map(e, TripEntryDTO.class))
@@ -96,6 +99,7 @@ public class TripDataCollectorService {
                         .title(title)
                         .dateFrom(from)
                         .dateTo(to)
+                        .dateFound(ZonedDateTime.now(ZoneId.of(getZoneId())))
                         .priceBig(priceBig)
                         .priceSmall(priceSmall)
                         .typeList(typeList)
@@ -116,15 +120,8 @@ public class TripDataCollectorService {
         updatedData.removeAll(tripList);
         log.info(String.format("Found %s new trip(s)", updatedData.size()));
 
-        List<TripEntryEntity> newEntities = updatedData.stream().map(e -> TripEntryEntity.builder()
-                .title(e.getTitle())
-                .dateFrom(e.getDateFrom())
-                .dateTo(e.getDateTo())
-                .dateFound(LocalDateTime.now(ZoneId.of("+2")))
-                .priceBig(e.getPriceBig())
-                .priceSmall(e.getPriceSmall())
-                .typeList(e.getTypeList())
-                .build())
+        List<TripEntryEntity> newEntities = updatedData.stream()
+                .map(e -> modelMapper.map(e, TripEntryEntity.class))
                 .collect(toList());
         tripEntryService.save(newEntities);
         tripList.addAll(updatedData);
