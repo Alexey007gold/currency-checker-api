@@ -2,8 +2,7 @@ package com.currencycheckerapi.dao.entity;
 
 import com.currencycheckerapi.dao.api.AbstractEntity;
 import com.currencycheckerapi.dao.converter.TypeListConverter;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -14,7 +13,10 @@ import java.util.List;
 
 @Entity
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "trip_entry")
+@EqualsAndHashCode(callSuper = false)
 @Builder
 public class TripEntryEntity extends AbstractEntity {
 
