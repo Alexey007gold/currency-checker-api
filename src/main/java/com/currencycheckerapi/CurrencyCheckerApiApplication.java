@@ -2,15 +2,18 @@ package com.currencycheckerapi;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.net.http.HttpClient;
 
 @SpringBootApplication
 @EnableScheduling
+@EnableTransactionManagement
 public class CurrencyCheckerApiApplication {
 
 	public static void main(String[] args) {
@@ -27,6 +30,11 @@ public class CurrencyCheckerApiApplication {
 	@Bean
 	public HttpClient httpClient() {
 		return HttpClient.newHttpClient();
+	}
+
+	@Bean
+	public ModelMapper modelMapper() {
+		return new ModelMapper();
 	}
 
 }
