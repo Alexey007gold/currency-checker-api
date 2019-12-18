@@ -1,8 +1,6 @@
 package com.currencycheckerapi.util;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
@@ -19,7 +17,7 @@ public class DateUtil {
     private DateUtil() {
     }
 
-    public static LocalDateTime parseDate(String date) {
+    public static ZonedDateTime parseDate(String date, String zoneId) {
         String[] split = date.split(" ");
         DateTimeFormatter simpleDateFormat = DateTimeFormatter.ofPattern("HH:mm");
         TemporalAccessor time = simpleDateFormat.parse(split[2]);
@@ -32,7 +30,8 @@ public class DateUtil {
         if (dateTimeNow.compareTo(parsedDateTime) >= 0) {
             year++;
         }
-        return LocalDateTime.of(LocalDate.of(year, month, dayOfMonth),
-                LocalTime.of(time.get(HOUR_OF_DAY), time.get(MINUTE_OF_HOUR)));
+        return ZonedDateTime.of(LocalDate.of(year, month, dayOfMonth),
+                LocalTime.of(time.get(HOUR_OF_DAY), time.get(MINUTE_OF_HOUR)),
+                ZoneId.of(zoneId));
     }
 }

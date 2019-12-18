@@ -16,8 +16,8 @@ import java.util.Objects;
 public class TripEntryDTO {
 
     private String title;
-    private String dateFrom;
-    private String dateTo;
+    private ZonedDateTime dateFrom;
+    private ZonedDateTime dateTo;
     private ZonedDateTime dateFound;
     private String priceBig;
     private String priceSmall;

@@ -12,10 +12,10 @@
             <column name="title" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="date_from" type="VARCHAR(64)">
+            <column name="date_from" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="date_to" type="VARCHAR(64)">
+            <column name="date_to" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="date_found" type="BIGINT">

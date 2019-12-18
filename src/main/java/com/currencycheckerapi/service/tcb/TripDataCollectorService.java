@@ -10,6 +10,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +47,9 @@ public class TripDataCollectorService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Value("${zoneid}")
+    private String zoneId;
+
     private List<TripEntryDTO> tripList;
 
     private final HttpRequest calendarRequest = HttpRequest.newBuilder()
@@ -57,7 +61,7 @@ public class TripDataCollectorService {
     public void init() {
         log.info(LocalDateTime.now().toString());
         log.info(ZonedDateTime.now(ZoneId.of(getZoneId())).toString());
-        comparator = Comparator.comparing((TripEntryDTO o) -> parseDate(o.getDateFrom()))
+        comparator = Comparator.comparing(TripEntryDTO::getDateFrom)
                 .thenComparing(TripEntryDTO::getTitle);
         tripList = StreamSupport.stream(tripEntryService.findAll().spliterator(), false)
                 .map(e -> modelMapper.map(e, TripEntryDTO.class))
@@ -97,8 +101,8 @@ public class TripDataCollectorService {
                 }
                 tripEntryDTOList.add(TripEntryDTO.builder()
                         .title(title)
-                        .dateFrom(from)
-                        .dateTo(to)
+                        .dateFrom(parseDate(from, zoneId))
+                        .dateTo(parseDate(to, zoneId))
                         .dateFound(ZonedDateTime.now(ZoneId.of(getZoneId())))
                         .priceBig(priceBig)
                         .priceSmall(priceSmall)

@@ -23,10 +23,12 @@ public class TripEntryEntity extends AbstractEntity {
 
     @Column(name = "title", nullable = false)
     private String title;
+    @Convert(converter = ZonedDateTimeConverter.class)
     @Column(name = "date_from", nullable = false)
-    private String dateFrom;
+    private ZonedDateTime dateFrom;
+    @Convert(converter = ZonedDateTimeConverter.class)
     @Column(name = "date_to", nullable = false)
-    private String dateTo;
+    private ZonedDateTime dateTo;
     @Convert(converter = ZonedDateTimeConverter.class)
     @Column(name = "date_found", nullable = false)
     private ZonedDateTime dateFound;
