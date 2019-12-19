@@ -69,7 +69,7 @@ public class TripAnalyzerService {
         if (toDate == null) toDate = ZonedDateTime.of(LocalDateTime.MAX, ZoneId.of(zoneId));
         ZonedDateTime finalFromDate = fromDate;
         ZonedDateTime finalToDate = toDate;
-        return tripDataCollectorService.getTripList().stream()
+        return tripDataCollectorService.getTrips().stream()
                 .filter(t -> t.getDateFrom().isAfter(finalFromDate) || t.getDateFrom().isEqual(finalFromDate) &&
                         t.getDateTo().isBefore(finalToDate) || t.getDateTo().isEqual(finalToDate)).collect(toList());
     }

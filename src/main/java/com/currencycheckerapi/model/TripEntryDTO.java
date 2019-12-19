@@ -29,13 +29,11 @@ public class TripEntryDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TripEntryDTO that = (TripEntryDTO) o;
-        return Objects.equals(title, that.title) &&
-                Objects.equals(dateFrom, that.dateFrom) &&
-                Objects.equals(dateTo, that.dateTo);
+        return Objects.equals(link, that.link);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, dateFrom, dateTo);
+        return Objects.hash(link);
     }
 }

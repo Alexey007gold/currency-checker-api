@@ -8,8 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 @RestController
 public class TripController {
@@ -21,8 +21,8 @@ public class TripController {
     private TripAnalyzerService tripAnalyzerService;
 
     @GetMapping(value = "trips", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<TripEntryDTO> getTrips() {
-        return tripDataCollectorService.getTripList();
+    public SortedSet<TripEntryDTO> getTrips() {
+        return tripDataCollectorService.getTrips();
     }
 
     @GetMapping(value = "tripTotalCost", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

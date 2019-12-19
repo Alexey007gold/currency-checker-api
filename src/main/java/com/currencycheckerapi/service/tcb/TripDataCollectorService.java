@@ -25,14 +25,12 @@ import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 import static com.currencycheckerapi.CurrencyCheckerApiApplication.getZoneId;
 import static com.currencycheckerapi.util.DateUtil.parseDate;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -57,7 +55,7 @@ public class TripDataCollectorService {
     @Value("${email.receiver.username}")
     private String receivers;
 
-    private List<TripEntryDTO> tripList;
+    private SortedSet<TripEntryDTO> tripSet;
 
     private final HttpRequest calendarRequest = HttpRequest.newBuilder()
             .uri(URI.create("https://tcb.com.ua/calendar/"))
@@ -70,10 +68,10 @@ public class TripDataCollectorService {
         log.info(ZonedDateTime.now(ZoneId.of(getZoneId())).toString());
         comparator = Comparator.comparing(TripEntryDTO::getDateFrom)
                 .thenComparing(TripEntryDTO::getTitle);
-        tripList = StreamSupport.stream(tripEntryService.findAll().spliterator(), false)
+        tripSet = StreamSupport.stream(tripEntryService.findAll().spliterator(), false)
                 .map(e -> modelMapper.map(e, TripEntryDTO.class))
                 .sorted(comparator)
-                .collect(toList());
+                .collect(toCollection(() -> new TreeSet<>(comparator)));
     }
 
     public List<TripEntryDTO> collect() throws IOException, InterruptedException {
@@ -132,20 +130,19 @@ public class TripDataCollectorService {
     @Scheduled(fixedRate = 600_000)
     @Transactional
     public void fetchTrips() throws IOException, InterruptedException {
-        List<TripEntryDTO> updatedData = collect();
-        updatedData.removeAll(tripList);
-        log.info(String.format("Found %s new trip(s)", updatedData.size()));
+        List<TripEntryDTO> fetchedTrips = collect();
+        ArrayList<TripEntryDTO> updatedTrips = new ArrayList<>(fetchedTrips);
+        updatedTrips.removeAll(tripSet);
+        log.info(String.format("Found %s new trip(s)", updatedTrips.size()));
+        if (updatedTrips.isEmpty()) return;
 
-        List<TripEntryEntity> newEntities = updatedData.stream()
+        List<TripEntryEntity> newEntities = updatedTrips.stream()
                 .map(e -> modelMapper.map(e, TripEntryEntity.class))
                 .collect(toList());
         tripEntryService.save(newEntities);
-        tripList.addAll(updatedData);
-        tripList.sort(comparator);
+        tripSet.addAll(fetchedTrips);
 
-        if (!updatedData.isEmpty()) {
-            notifyByEmail(updatedData);
-        }
+        notifyByEmail(updatedTrips);
     }
 
     private void notifyByEmail(List<TripEntryDTO> updatedData) {
@@ -168,7 +165,7 @@ public class TripDataCollectorService {
         return comparator;
     }
 
-    public List<TripEntryDTO> getTripList() {
-        return tripList;
+    public SortedSet<TripEntryDTO> getTrips() {
+        return tripSet;
     }
 }
