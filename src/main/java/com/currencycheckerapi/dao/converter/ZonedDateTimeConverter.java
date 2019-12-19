@@ -18,6 +18,6 @@ public class ZonedDateTimeConverter implements AttributeConverter<ZonedDateTime,
 
     @Override
     public ZonedDateTime convertToEntityAttribute(Long dbData) {
-        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(dbData), ZoneId.of(getZoneId()));
+        return ZonedDateTime.ofInstant(Instant.ofEpochSecond(dbData), ZoneId.of(getZoneId()));
     }
 }
