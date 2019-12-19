@@ -140,10 +140,13 @@ public class TripDataCollectorService {
         tripList.addAll(updatedData);
         tripList.sort(comparator);
 
-        notifyByEmail(updatedData);
+        if (!updatedData.isEmpty()) {
+            notifyByEmail(updatedData);
+        }
     }
 
     private void notifyByEmail(List<TripEntryDTO> updatedData) {
+        if (updatedData.isEmpty()) return;
         StringBuilder builder = new StringBuilder();
         for (TripEntryDTO updatedDatum : updatedData) {
             builder.append(updatedDatum.getTitle()).append('\n')
@@ -153,7 +156,7 @@ public class TripDataCollectorService {
                     .append(updatedDatum.getLink()).append("\n\n");
         }
         for (String to : receivers.split(",")) {
-            emailService.sendEmail(to.trim(), "New trips are found", builder.toString());
+            emailService.sendEmail(to.trim(), updatedData.size() + " new trip(s) are found", builder.toString());
         }
         log.info("Sent email notification about new events");
     }
