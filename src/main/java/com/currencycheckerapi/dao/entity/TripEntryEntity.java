@@ -36,6 +36,8 @@ public class TripEntryEntity extends AbstractEntity {
     private String priceBig;
     @Column(name = "price_small", nullable = false)
     private String priceSmall;
+    @Column(name = "link", nullable = false)
+    private String link;
     @Convert(converter = TypeListConverter.class)
     @Column(name = "type_list", nullable = false)
     private List<String> typeList;

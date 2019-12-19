@@ -3,6 +3,7 @@ package com.currencycheckerapi.service.tcb;
 import com.currencycheckerapi.dao.entity.TripEntryEntity;
 import com.currencycheckerapi.dao.service.TripEntryService;
 import com.currencycheckerapi.model.TripEntryDTO;
+import com.currencycheckerapi.service.EmailService;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -45,10 +46,16 @@ public class TripDataCollectorService {
     private TripEntryService tripEntryService;
 
     @Autowired
+    private EmailService emailService;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     @Value("${zoneid}")
     private String zoneId;
+
+    @Value("${email.receiver.username}")
+    private String receivers;
 
     private List<TripEntryDTO> tripList;
 
@@ -83,8 +90,9 @@ public class TripDataCollectorService {
         List<TripEntryDTO> tripEntryDTOList = new ArrayList<>();
         travelEntryUrls.stream().parallel().forEach(u -> {
             try {
+                String fullUrl = String.format("https://tcb.com.ua%s", u);
                 HttpRequest tripRequest = HttpRequest.newBuilder()
-                        .uri(URI.create(String.format("https://tcb.com.ua%s", u)))
+                        .uri(URI.create(fullUrl))
                         .build();
                 String tripHtml = httpClient.send(tripRequest, HttpResponse.BodyHandlers.ofString()).body();
                 Document document = Jsoup.parse(tripHtml);
@@ -106,6 +114,7 @@ public class TripDataCollectorService {
                         .dateFound(ZonedDateTime.now(ZoneId.of(getZoneId())))
                         .priceBig(priceBig)
                         .priceSmall(priceSmall)
+                        .link(fullUrl)
                         .typeList(typeList)
                         .build());
             } catch (InterruptedException | IOException e) {
@@ -130,6 +139,23 @@ public class TripDataCollectorService {
         tripEntryService.save(newEntities);
         tripList.addAll(updatedData);
         tripList.sort(comparator);
+
+        notifyByEmail(updatedData);
+    }
+
+    private void notifyByEmail(List<TripEntryDTO> updatedData) {
+        StringBuilder builder = new StringBuilder();
+        for (TripEntryDTO updatedDatum : updatedData) {
+            builder.append(updatedDatum.getTitle()).append('\n')
+                    .append(updatedDatum.getDateFrom()).append(" - ")
+                    .append(updatedDatum.getDateTo()).append('\n')
+                    .append(updatedDatum.getPriceSmall()).append('\n')
+                    .append(updatedDatum.getLink()).append("\n\n");
+        }
+        for (String to : receivers.split(",")) {
+            emailService.sendEmail(to.trim(), "New trips are found", builder.toString());
+        }
+        log.info("Sent email notification about new events");
     }
 
     public Comparator<TripEntryDTO> getComparator() {

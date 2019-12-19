@@ -21,6 +21,7 @@ public class TripEntryDTO {
     private ZonedDateTime dateFound;
     private String priceBig;
     private String priceSmall;
+    private String link;
     private List<String> typeList;
 
     @Override

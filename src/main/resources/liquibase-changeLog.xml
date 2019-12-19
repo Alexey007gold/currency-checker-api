@@ -27,6 +27,9 @@
             <column name="price_small" type="VARCHAR(16)">
                 <constraints nullable="false"/>
             </column>
+            <column name="link" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
             <column name="type_list" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
