@@ -87,41 +87,44 @@ public class TripDataCollectorService {
         List<String> travelEntryUrls = travelEntries.stream()
                 .map(e -> e.getElementsByTag("a").get(0).attr("href"))
                 .collect(toList());
-        List<TripEntryDTO> tripEntryDTOList = new ArrayList<>();
-        travelEntryUrls.stream().parallel().forEach(u -> {
-            try {
-                String fullUrl = String.format("https://tcb.com.ua%s", u);
-                HttpRequest tripRequest = HttpRequest.newBuilder()
-                        .uri(URI.create(fullUrl))
-                        .build();
-                String tripHtml = httpClient.send(tripRequest, HttpResponse.BodyHandlers.ofString()).body();
-                Document document = Jsoup.parse(tripHtml);
-                Elements ordertheadTable = document.getElementById("orderthead").getElementsByTag("tr").get(0).children();
-                String from = ordertheadTable.get(0).childNodes().get(0).toString().trim();
-                String to = ordertheadTable.get(2).childNodes().get(0).toString().trim();
-                String priceBig = ordertheadTable.get(4).children().get(0).text();
-                String priceSmall = ordertheadTable.get(4).children().get(2).text();
-                String title = document.getElementsByClass("tourtext").get(0).getElementsByTag("h1").text().trim();
-                Elements typeChildren = document.getElementsByClass("tourtext").get(0).getElementsByTag("span").get(0).children();
-                List<String> typeList = new ArrayList<>();
-                for (int i = 1; i < typeChildren.size(); i++) {
-                    typeList.add(typeChildren.get(i).text());
-                }
-                tripEntryDTOList.add(TripEntryDTO.builder()
-                        .title(title)
-                        .dateFrom(parseDate(from, zoneId))
-                        .dateTo(parseDate(to, zoneId))
-                        .dateFound(ZonedDateTime.now(ZoneId.of(getZoneId())))
-                        .priceBig(priceBig)
-                        .priceSmall(priceSmall)
-                        .link(fullUrl)
-                        .typeList(typeList)
-                        .build());
-            } catch (InterruptedException | IOException e) {
-                log.error(String.format("Exception message: %s, Stacktrace: %s",
-                        e.getMessage(), Arrays.toString(e.getStackTrace())));
-            }
-        });
+        List<TripEntryDTO> tripEntryDTOList = travelEntryUrls.stream().parallel()
+                .map(u -> {
+                    try {
+                        String fullUrl = String.format("https://tcb.com.ua%s", u);
+                        HttpRequest tripRequest = HttpRequest.newBuilder()
+                                .uri(URI.create(fullUrl))
+                                .build();
+                        String tripHtml = httpClient.send(tripRequest, HttpResponse.BodyHandlers.ofString()).body();
+                        Document document = Jsoup.parse(tripHtml);
+                        Elements ordertheadTable = document.getElementById("orderthead").getElementsByTag("tr").get(0).children();
+                        String from = ordertheadTable.get(0).childNodes().get(0).toString().trim();
+                        String to = ordertheadTable.get(2).childNodes().get(0).toString().trim();
+                        String priceBig = ordertheadTable.get(4).children().get(0).text();
+                        String priceSmall = ordertheadTable.get(4).children().get(2).text();
+                        String title = document.getElementsByClass("tourtext").get(0).getElementsByTag("h1").text().trim();
+                        Elements typeChildren = document.getElementsByClass("tourtext").get(0).getElementsByTag("span").get(0).children();
+                        List<String> typeList = new ArrayList<>();
+                        for (int i = 1; i < typeChildren.size(); i++) {
+                            typeList.add(typeChildren.get(i).text());
+                        }
+                        return TripEntryDTO.builder()
+                                .title(title)
+                                .dateFrom(parseDate(from, zoneId))
+                                .dateTo(parseDate(to, zoneId))
+                                .dateFound(ZonedDateTime.now(ZoneId.of(getZoneId())))
+                                .priceBig(priceBig)
+                                .priceSmall(priceSmall)
+                                .link(fullUrl)
+                                .typeList(typeList)
+                                .build();
+                    } catch (Exception e) {
+                        log.error(String.format("Exception message: %s, Stacktrace: %s",
+                                e.getMessage(), Arrays.toString(e.getStackTrace())));
+                        throw new RuntimeException(e);
+                    }
+                })
+                .sorted(comparator)
+                .collect(toList());
         log.info(String.format("Time spent for trips fetching %ss", (System.currentTimeMillis() - start) / 1000.));
         return tripEntryDTOList;
     }
