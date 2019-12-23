@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static com.currencycheckerapi.CurrencyCheckerApiApplication.getZoneId;
@@ -52,7 +53,7 @@ public class TripDataCollectorService {
     @Value("${zoneid}")
     private String zoneId;
 
-    @Value("${email.receiver.username}")
+    @Value("${email.receiver.username:}")
     private String receivers;
 
     private SortedSet<TripEntryDTO> tripSet;
@@ -75,6 +76,9 @@ public class TripDataCollectorService {
     }
 
     public List<TripEntryDTO> collect() throws IOException, InterruptedException {
+        Set<String> fetchedUrlSet = tripSet.stream()
+                .map(t -> t.getLink().replace("https://tcb.com.ua", ""))
+                .collect(Collectors.toSet());
         long start = System.currentTimeMillis();
         HttpResponse<String> httpResponse = httpClient.send(calendarRequest, HttpResponse.BodyHandlers.ofString());
         String calendarHtml = httpResponse.body();
@@ -88,6 +92,7 @@ public class TripDataCollectorService {
         List<TripEntryDTO> tripEntryDTOList = travelEntryUrls.stream().parallel()
                 .map(u -> {
                     try {
+                        if (fetchedUrlSet.contains(u)) return null;
                         String fullUrl = String.format("https://tcb.com.ua%s", u);
                         HttpRequest tripRequest = HttpRequest.newBuilder()
                                 .uri(URI.create(fullUrl))
@@ -121,6 +126,7 @@ public class TripDataCollectorService {
                         throw new RuntimeException(e);
                     }
                 })
+                .filter(Objects::nonNull)
                 .sorted(comparator)
                 .collect(toList());
         log.info(String.format("Time spent for trips fetching %ss", (System.currentTimeMillis() - start) / 1000.));

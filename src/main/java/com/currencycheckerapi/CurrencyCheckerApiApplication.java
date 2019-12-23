@@ -27,10 +27,10 @@ public class CurrencyCheckerApiApplication {
 
 	private DataSource dataSource;
 
-	@Value("${email.sender.username}")
+	@Value("${email.sender.username:}")
 	private String emailUser;
 
-	@Value("${email.sender.password}")
+	@Value("${email.sender.password:}")
 	private String emailPassword;
 
 	@Autowired
